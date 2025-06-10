@@ -3,25 +3,36 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: https://github.com/konflux-fedora-rpm-packages/libecpg?rev={{revision}}
+    build.appstudio.openshift.io/repo: '{{ source_url }}/-/tree/{{ revision }}'
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
       == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: rpms
-    appstudio.openshift.io/component: libecpg
+    appstudio.openshift.io/application: APPLICATION
+    appstudio.openshift.io/component: COMPONENT
     pipelines.appstudio.openshift.io/type: build
-  name: libecpg-on-push
-  namespace: rhn-support-praiskup-tenant
+  name: COMPONENT-on-pull-request
+  namespace: NAMESPACE
 spec:
   params:
     - name: package-name
       value: libecpg
+    - name: git-url
+      value: "{{ source_url }}"
+    - name: revision
+      value: "{{ revision }}"
+    - name: target-branch
+      value: "{{ target_branch }}"
+    - name: ociStorage
+      value: "quay.io/konflux-fedora/$(context.taskRun.namespace)/COMPONENT:$(params.revision)"
   pipelineRef:
     name: build-fedora-package
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-COMPONENT
   workspaces:
     - name: workspace
       volumeClaimTemplate:
