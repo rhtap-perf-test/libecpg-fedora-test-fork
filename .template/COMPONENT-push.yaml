@@ -29,6 +29,12 @@ spec:
       value: "{{ target_branch }}"
     - name: ociStorage
       value: "quay.io/redhat-user-workloads/$(context.taskRun.namespace)/COMPONENT:$(params.revision)"
+    - name: build-architectures
+      value:
+        - aarch64
+        - x86_64
+        - ppc64le
+        - s390x
   pipelineRef:
     resolver: git
     params:
